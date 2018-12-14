@@ -4,8 +4,6 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import models, fields, api
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 
 
 class SaleProjectWizard(models.TransientModel):
@@ -87,16 +85,7 @@ class SaleProjectWizard(models.TransientModel):
         for line in sale_id.order_line:
             if line.product_id.track_service == 'project':
                 if line.product_id.project_id:
-                    project = line.product_id.project_id
-                    project_id = project.id
-                    date_plan = datetime.strptime(
-                        sale_id.confirmation_date,
-                        '%Y-%m-%d %H:%M:%S'
-                        )
-                    date_deadline = (
-                        date_plan.date()
-                        + relativedelta(years=int(line.product_uom_qty))
-                        ).strftime('%Y-%m-%d')
+                    project_id = line.product_id.project_id.id
                     stage = line.product_id.project_task_type_id
                     if sale_id.partner_id.is_company:
                         if stage.name:
@@ -119,7 +108,6 @@ class SaleProjectWizard(models.TransientModel):
                 else:
                     stage = stage_new
                     project_id = project_id_new
-                    date_deadline = False
                     name_task = line.name.split('\n', 1)[0]
                 project_date = self.env['project.project'].browse(project_id)
                 project_date.daily_price = daily_price
@@ -128,8 +116,7 @@ class SaleProjectWizard(models.TransientModel):
                         alias_name = alias_prefix + project_date.name
                         project_date.alias_name = alias_name
                 planned_hours = (
-                    (line.price_subtotal / daily_price)
-                    * hours_per_day
+                    (line.price_subtotal / daily_price) * hours_per_day
                     )
                 description_line = "<p>"
                 for line_name in line.name:
@@ -139,7 +126,6 @@ class SaleProjectWizard(models.TransientModel):
                         description_line = description_line + line_name
                 self.env['project.task'].create({
                     'name': name_task,
-                    'date_deadline': date_deadline,
                     'planned_hours': planned_hours,
                     'remaining_hours': planned_hours,
                     'partner_id': (sale_id.partner_id.id
