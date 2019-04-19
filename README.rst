@@ -71,7 +71,7 @@ Contributors
 Maintainer
 ------------
 
-.. image:: https://le-filament.com/images/logo-lefilament.png
+.. image:: https://le-filament.com/img/logo-lefilament.png
    :alt: Le Filament
    :target: https://le-filament.com
 
